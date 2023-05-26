@@ -230,7 +230,7 @@
                         if (previousPrice !== null) {
                             const priceChange = price - previousPrice;
                             let priceChangeClass = '';
-                            if (Math.abs(priceChange) >= 100) {
+                            if (Math.abs(priceChange) >= 1) {
                                 priceChangeClass = priceChange > 0 ? 'green' : 'red';
                                 const priceChangeText = `<span class="price-change ${priceChangeClass}">$${priceChange.toFixed(2)} USD</span>`;
 
