@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bitcoin Price Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 0;
+            color: #333333;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .price-container {
+            font-size: 36px;
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #ffffff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        .green {
+            color: #00b894;
+        }
+
+        .red {
+            color: #d63031;
+        }
+
+        .log-container {
+            font-family: Consolas, monospace;
+            font-size: 14px;
+            background-color: #ffffff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            overflow-y: auto;
+            max-height: calc(100vh - 430px); /* Adjust the value if needed */
+        }
+
+        .log-entry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .price-info {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .price {
+            margin-bottom: 5px;
+        }
+
+        .timestamp {
+            color: #555555;
+            font-size: 12px;
+        }
+
+        .analytics-container {
+            background-color: #ffffff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .analytics-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .analytics-label {
+            font-weight: bold;
+            color: #333333;
+        }
+
+        .analytics-value {
+            font-weight: bold;
+            color: #555555;
+        }
+
+        @media only screen and (max-width: 480px) {
+            .price-container {
+                font-size: 24px;
+            }
+
+            .log-container {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bitcoin Price Tracker</h1>
+        <div class="price-container" id="price-container">Loading...</div>
+        <div class="log-container" id="log-container"></div>
+        <div class="analytics-container">
+            <div class="analytics-item">
+                <span class="analytics-label">Total Logs:</span>
+                <span class="analytics-value" id="total-logs">0</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-label">Positive Changes:</span>
+                <span class="analytics-value" id="positive-changes">0</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-label">Negative Changes:</span>
+                <span class="analytics-value" id="negative-changes">0</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-label">Largest Increase:</span>
+                <span class="analytics-value" id="largest-increase">$0.00 USD</span>
+                <span class="analytics-value" id="largest-increase-date">-</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-label">Largest Decrease:</span>
+                <span class="analytics-value" id="largest-decrease">$0.00 USD</span>
+                <span class="analytics-value" id="largest-decrease-date">-</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-label">Average Change:</span>
+                <span class="analytics-value" id="average-change">$0.00 USD</span>
+            </div>
+            <div class="analytics-item">
+                <span class="analytics-label">Total Change:</span>
+                <span class="analytics-value" id="total-change">$0.00 USD</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatTimestamp(timestamp) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+            return new Date(timestamp).toLocaleDateString('en-US', options);
+        }
+
+        function trackBitcoinPrice() {
+            const priceContainer = document.getElementById('price-container');
+            const logContainer = document.getElementById('log-container');
+            const totalLogsElement = document.getElementById('total-logs');
+            const positiveChangesElement = document.getElementById('positive-changes');
+            const negativeChangesElement = document.getElementById('negative-changes');
+            const largestIncreaseElement = document.getElementById('largest-increase');
+            const largestIncreaseDateElement = document.getElementById('largest-increase-date');
+            const largestDecreaseElement = document.getElementById('largest-decrease');
+            const largestDecreaseDateElement = document.getElementById('largest-decrease-date');
+            const averageChangeElement = document.getElementById('average-change');
+            const totalChangeElement = document.getElementById('total-change');
+
+            let previousPrice = null;
+            let logs = JSON.parse(localStorage.getItem('bitcoinLogs')) || [];
+            let positiveChanges = parseInt(localStorage.getItem('positiveChanges')) || 0;
+            let negativeChanges = parseInt(localStorage.getItem('negativeChanges')) || 0;
+            let largestIncrease = parseFloat(localStorage.getItem('largestIncrease')) || 0;
+            let largestIncreaseDate = localStorage.getItem('largestIncreaseDate');
+            let largestDecrease = parseFloat(localStorage.getItem('largestDecrease')) || 0;
+            let largestDecreaseDate = localStorage.getItem('largestDecreaseDate');
+            let totalChange = parseFloat(localStorage.getItem('totalChange')) || 0;
+
+            function updateLogs() {
+                const shouldScrollToBottom = logContainer.scrollTop + logContainer.clientHeight === logContainer.scrollHeight;
+
+                let logEntries = '';
+                logs.slice().reverse().forEach(log => {
+                    const logEntry = `
+                        <div class="log-entry">
+                            <div class="price-info">
+                                <div class="price">Bitcoin Price: $${log.price.toFixed(2)} USD</div>
+                                <div class="price-change ${log.priceChangeClass}">Price Change: ${log.priceChangeText}</div>
+                            </div>
+                            <div class="timestamp">${log.timestamp}</div>
+                        </div>
+                    `;
+                    logEntries += logEntry;
+                });
+
+                logContainer.innerHTML = logEntries;
+
+                if (shouldScrollToBottom) {
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                }
+            }
+
+            function updateAnalytics() {
+                totalLogsElement.textContent = logs.length;
+                positiveChangesElement.textContent = positiveChanges;
+                negativeChangesElement.textContent = negativeChanges;
+                largestIncreaseElement.textContent = `$${largestIncrease.toFixed(2)} USD`;
+                largestIncreaseDateElement.textContent = largestIncreaseDate ? formatTimestamp(largestIncreaseDate) : '-';
+                largestDecreaseElement.textContent = `$${largestDecrease.toFixed(2)} USD`;
+                largestDecreaseDateElement.textContent = largestDecreaseDate ? formatTimestamp(largestDecreaseDate) : '-';
+
+                const averageChange = logs.length > 0 ? totalChange / logs.length : 0;
+                averageChangeElement.textContent = `$${averageChange.toFixed(2)} USD`;
+                totalChangeElement.textContent = `$${totalChange.toFixed(2)} USD`;
+            }
+
+            updateLogs();
+            updateAnalytics();
+
+            setInterval(() => {
+                fetch('https://api.pro.coinbase.com/products/BTC-USD/ticker')
+                    .then(response => response.json())
+                    .then(data => {
+                        const price = parseFloat(data.price);
+                        const timestamp = formatTimestamp(data.time);
+
+                        if (previousPrice !== null) {
+                            const priceChange = price - previousPrice;
+                            let priceChangeClass = '';
+                            if (Math.abs(priceChange) >= 100) {
+                                priceChangeClass = priceChange > 0 ? 'green' : 'red';
+                                const priceChangeText = `<span class="price-change ${priceChangeClass}">$${priceChange.toFixed(2)} USD</span>`;
+
+                                logs.push({
+                                    price,
+                                    priceChangeClass,
+                                    priceChangeText,
+                                    timestamp
+                                });
+
+                                if (priceChange > 0) {
+                                    positiveChanges++;
+                                    if (priceChange > largestIncrease) {
+                                        largestIncrease = priceChange;
+                                        largestIncreaseDate = new Date(data.time);
+                                    }
+                                } else {
+                                    negativeChanges++;
+                                    if (priceChange < largestDecrease) {
+                                        largestDecrease = priceChange;
+                                        largestDecreaseDate = new Date(data.time);
+                                    }
+                                }
+
+                                totalChange += priceChange;
+
+                                localStorage.setItem('bitcoinLogs', JSON.stringify(logs));
+                                localStorage.setItem('positiveChanges', positiveChanges);
+                                localStorage.setItem('negativeChanges', negativeChanges);
+                                localStorage.setItem('largestIncrease', largestIncrease);
+                                localStorage.setItem('largestIncreaseDate', largestIncreaseDate);
+                                localStorage.setItem('largestDecrease', largestDecrease);
+                                localStorage.setItem('largestDecreaseDate', largestDecreaseDate);
+                                localStorage.setItem('totalChange', totalChange);
+
+                                updateLogs();
+                                updateAnalytics();
+                            }
+                        }
+
+                        previousPrice = price;
+                        priceContainer.innerHTML = `$${price.toFixed(2)} USD`;
+                    })
+                    .catch(error => {
+                        console.log('An error occurred:', error);
+                    });
+            }, 1000);
+        }
+
+        trackBitcoinPrice();
+    </script>
+</body>
+</html>
