@@ -9,10 +9,4 @@ Log container to view price changes over time
 Analytics section displaying key metrics
 Persistent data storage using local storage
 Mobile-friendly design
-Getting Started
-To start using the Bitcoin Price Tracker tool, follow these steps:
-
-Clone the repository: git clone https://github.com/your-username/bitcoin-price-tracker.git
-Open the index.html file in your web browser.
-The Bitcoin price will be displayed in the price container, and the log container will show the price changes as they occur.
-The analytics section will provide insights into the price changes, including positive and negative changes, largest increase and decrease, average change, and total change.
+Price Threshold: $100
