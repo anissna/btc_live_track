@@ -49,16 +49,3 @@ The project structure of the Bitcoin Price Tracker repository is as follows:
 ### Contributions
 
 Contributions to the Bitcoin Price Tracker tool are welcome! If you have any improvements or feature suggestions, feel free to submit a pull request.
-
-### License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more information.
-
-### Author
-
-- Your Name
-- GitHub: [your-username](https://github.com/your-username)
-
-### Demo
-
-[View Live Demo]([https://your-username.github.io/bitcoin-price-tracker](https://btc-live-track.netlify.app/)
