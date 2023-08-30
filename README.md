@@ -1,5 +1,3 @@
-Certainly! Here's an updated GitHub presentation for the Bitcoin Price Tracker tool with the added feature of a price threshold:
-
 ## Bitcoin Price Tracker
 
 ### Overview
@@ -64,5 +62,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ### Demo
 
 [View Live Demo]([https://your-username.github.io/bitcoin-price-tracker](https://btc-live-track.netlify.app/)
-
-Feel free to customize this GitHub presentation according to your specific project details, such as the repository URL, project structure, author information, and any additional features you may have implemented.
